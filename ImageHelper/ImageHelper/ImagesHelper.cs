@@ -11,7 +11,7 @@ namespace ImageHelper
     public static class ImagesHelper
     {
         /// <summary>
-        /// Resize image
+        /// Resize image by providing width and height.
         /// </summary>
         /// <param name="imageUrl"></param>
         /// <param name="width"></param>
@@ -60,7 +60,7 @@ namespace ImageHelper
         }
 
         /// <summary>
-        /// Resize image By Percentage
+        /// Resize image By Percentage.
         /// </summary>
         /// <param name="imageUrl"></param>
         /// <param name="percentage"></param>
@@ -118,7 +118,7 @@ namespace ImageHelper
         /// <param name="fileName"></param>
         /// <returns></returns>
         /// <exception cref="NotSupportedException"></exception>
-        public async static Task<ImageResult> ConvertTocontentType(string imageUrl, string fileName, ImageFormat contentType = ImageFormat.Png)
+        public async static Task<ImageResult> ChangeFormat(string imageUrl, string fileName, ImageFormat contentType = ImageFormat.Png)
         {
             // Download the image from the provided URL
             using var httpClient = new HttpClient();
@@ -259,7 +259,7 @@ namespace ImageHelper
         }
 
         /// <summary>
-        /// Adding Watermark.
+        /// Adding text Watermark.
         /// </summary>
         /// <param name="imageUrl"></param>
         /// <param name="watermarkText"></param>
@@ -514,7 +514,7 @@ namespace ImageHelper
         }
 
         /// <summary>
-        /// 
+        /// Generate QR code.
         /// </summary>
         /// <param name="text"></param>
         /// <param name="size"></param>
@@ -532,27 +532,27 @@ namespace ImageHelper
                 }
             }.Write(text);
 
-            using (var image = Image.LoadPixelData<Rgba32>(qrCodeData.Pixels, qrCodeData.Width, qrCodeData.Height))
-            using (var memoryStream = new MemoryStream())
-            {
-                switch (contentType)
-                {
-                    case ImageFormat.Png:
-                        image.SaveAsPng(memoryStream);
-                        break;
-                    case ImageFormat.Jpeg:
-                        image.SaveAsJpeg(memoryStream);
-                        break;
-                    case ImageFormat.Bmp:
-                        image.SaveAsBmp(memoryStream);
-                        break;
-                    default:
-                        throw new NotSupportedException("Unsupported contentType.");
-                }
+            using var image = Image.LoadPixelData<Rgba32>(qrCodeData.Pixels, qrCodeData.Width, qrCodeData.Height);
 
-                byte[] imageBytes = memoryStream.ToArray();
-                return new ImageResult(imageBytes, GetUniqueFileName(fileName, $".{contentType}"), contentType);
+            using var memoryStream = new MemoryStream();
+
+            switch (contentType)
+            {
+                case ImageFormat.Png:
+                    image.SaveAsPng(memoryStream);
+                    break;
+                case ImageFormat.Jpeg:
+                    image.SaveAsJpeg(memoryStream);
+                    break;
+                case ImageFormat.Bmp:
+                    image.SaveAsBmp(memoryStream);
+                    break;
+                default:
+                    throw new NotSupportedException("Unsupported contentType.");
             }
+
+            byte[] imageBytes = memoryStream.ToArray();
+            return new ImageResult(imageBytes, GetUniqueFileName(fileName, $".{contentType}"), contentType);
         }
 
         public static string GetUniqueFileName(string fileName, string extension = ".png")
